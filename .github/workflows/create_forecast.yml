@@ -7,24 +7,30 @@ on:
   schedule:
     - cron: "34 9 * * 6"
 
+permissions:
+  contents: write  # Explicitly grant write access
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
+  create-forecast:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on:  ubuntu-22.04 # R not supported for ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+      
+      - name: Check out code
+      uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+      - name: Set up R
+      uses: r-lib/actions/setup-r@v2
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Install R Dependencies
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          install.packages(c("reshape2", "lubridate", "dplyr"))
+        shell: Rscript {0}
+
+      - name: Generate target CSV files
+        run: Rscript scripts/pho_all.R 
+
+      
